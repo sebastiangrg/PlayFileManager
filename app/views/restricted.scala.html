@@ -1,0 +1,131 @@
+@(
+playAuth: com.feth.play.module.pa.PlayAuthenticate,
+localUser: models.User = null,
+directory: models.DirectoryItem,
+directoryAncestors: List[models.DirectoryItem]
+)
+
+@import com.feth.play.module.pa.views.html._
+
+@main("Play File Manager") {
+
+@currentAuth(playAuth) { auth =>
+@if(auth != null) {
+<a href="@com.feth.play.module.pa.controllers.routes.Authenticate.logout" style="float:right">Logout</a>
+<span class="name">Logged in as @localUser.name</span>
+<br/>
+<br/>
+}
+}
+
+<h1>Play File Manager</h1>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb" style="font-size: 24px">
+        @for(dir <- directoryAncestors) {
+        <li class="breadcrumb-item">
+            <a href="@dir.id">@dir.name</a>
+        </li>
+        }
+        <li class="breadcrumb-item" aria-current="page">@directory.name</li>
+    </ol>
+</nav>
+
+<p style="font-size: 20px">Folders</p>
+
+@for(dir <- directory.childrenDirectories) {
+<div class="card" style="display: inline-block;
+            width: 16rem;
+            margin: 0 1rem 1rem 0;
+            cursor: pointer;"
+     ondblclick="location.href = '/restricted/@dir.id';">
+    <i class="material-icons" style="float:right; color:red" onclick="location.href = '/restricted/deleteDirectory/@dir.id';">
+        delete
+    </i>
+
+    <div class="card-body" style="padding: 0.75rem;">
+                <span>
+                    <i class="material-icons">
+                        folder
+                    </i>
+                    <span class="card-text" style="display: inline-block;
+                        font-size: 24px">@dir.name</span>
+                </span>
+    </div>
+</div>
+}
+
+<p style="font-size: 20px">Files</p>
+
+@for(file <- directory.childrenFiles) {
+<div class="card" style="display: inline-block;
+            width: 16rem;
+            margin: 0 1rem 1rem 0;
+            cursor: pointer;"
+     ondblclick="location.href = '/restricted/download/@file.id';">
+
+    <i class="material-icons" style="float:right; color:red" onclick="location.href = '/restricted/deleteFile/@file.id';">
+        delete
+    </i>
+
+    <div class="card-body" style="padding: 0.75rem;">
+                <span>
+                    <i class="material-icons">
+                        insert_drive_file
+                    </i>
+                    <span class="card-text" style="display: inline-block;
+                        font-size: 24px">@file.name</span>
+                </span>
+    </div>
+</div>
+}
+
+<div style="position: absolute;
+        right: 5rem;
+        bottom: 5rem;
+        font-size: 25px">
+    <!-- Folder Creation Modal Trigger -->
+    <i class="material-icons" style="font-size: 72px;
+            color: darkcyan;
+            cursor: pointer;" data-toggle="modal" data-target="#exampleModal">
+        create_new_folder
+    </i>
+    <form method="POST" enctype="multipart/form-data" style="display: inline-block">
+        <label for="upload">
+            <i class="material-icons" style="font-size: 72px;
+                    color: darkcyan;
+                    cursor: pointer;">
+                note_add
+            </i>
+            <input type="file" id="upload" name="file" style="display: none" onchange="form.submit()">
+        </label>
+    </form>
+</div>
+
+<!-- Folder Creation Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form action="/restricted/create/@directory.id" method="POST" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Create folder</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <label for="folder-name-input">Folder name</label>
+                <input type="text" id="folder-name-input" name="directoryName" class="form-control"
+                       aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default">
+                <div class="invalid-feedback">
+                    Please choose a folder name.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="submit" onclick="form.submit()" class="btn btn-primary">Create</button>
+            </div>
+        </form>
+    </div>
+</div>
+}
